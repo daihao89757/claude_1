@@ -8,41 +8,41 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{
   font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
-  background:#1a1a2e;color:#e0e0e0;user-select:none;
+  background:#0d0d0d;color:#ededed;user-select:none;
   display:flex;justify-content:center;align-items:center;
   min-height:100vh;overflow:hidden
 }
 .app{
   width:400px;padding:30px;border-radius:24px;
-  background:#1e1e36;box-shadow:0 20px 60px rgba(0,0,0,.5);
+  background:#1a1a1a;box-shadow:0 20px 60px rgba(0,0,0,.7);
   display:flex;flex-direction:column;align-items:center
 }
 /* Mode Tabs */
 .tabs{display:flex;gap:6px;margin-bottom:24px;width:100%}
 .tab{
   flex:1;padding:10px 0;border:none;border-radius:12px;
-  background:#2a2a44;color:#888;font-size:15px;font-weight:600;
+  background:#242424;color:#8a8a8a;font-size:15px;font-weight:600;
   cursor:pointer;transition:all .3s
 }
-.tab:hover{background:#35355a;color:#aaa}
-.tab.active{background:#e25555;color:#fff;box-shadow:0 4px 15px rgba(226,85,85,.35)}
-.tab[data-mode="shortBreak"].active{background:#4ecdc4;box-shadow:0 4px 15px rgba(78,205,196,.35)}
-.tab[data-mode="longBreak"].active{background:#6c63ff;box-shadow:0 4px 15px rgba(108,99,255,.35)}
+.tab:hover{background:#2e2e2e;color:#b0b0b0}
+.tab.active{background:#e53935;color:#fff;box-shadow:0 4px 15px rgba(229,57,53,.35)}
+.tab[data-mode="shortBreak"].active{background:#b0b0b0;color:#111;box-shadow:0 4px 15px rgba(176,176,176,.25)}
+.tab[data-mode="longBreak"].active{background:#757575;color:#fff;box-shadow:0 4px 15px rgba(117,117,117,.25)}
 /* Timer */
 .timer-wrap{position:relative;width:240px;height:240px;margin-bottom:8px}
 .timer-wrap svg{position:absolute;transform:rotate(-90deg)}
-.timer-wrap .bg{fill:none;stroke:#2a2a44;stroke-width:6}
+.timer-wrap .bg{fill:none;stroke:#242424;stroke-width:6}
 .timer-wrap .bar{
-  fill:none;stroke:#e25555;stroke-width:6;stroke-linecap:round;
+  fill:none;stroke:#e53935;stroke-width:6;stroke-linecap:round;
   stroke-dasharray:678.58;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke .5s
 }
-.short-break .bar{stroke:#4ecdc4}
-.long-break .bar{stroke:#6c63ff}
+.short-break .bar{stroke:#b0b0b0}
+.long-break .bar{stroke:#757575}
 .timer-inner{
   position:absolute;inset:0;display:flex;flex-direction:column;
   align-items:center;justify-content:center
 }
-.label{font-size:14px;color:#888;letter-spacing:2px;margin-bottom:4px}
+.label{font-size:14px;color:#8a8a8a;letter-spacing:2px;margin-bottom:4px}
 .time{
   font-size:58px;font-weight:300;letter-spacing:4px;
   font-variant-numeric:tabular-nums;color:#fff;line-height:1;margin-bottom:6px
@@ -57,33 +57,41 @@ body{
   cursor:pointer;transition:all .2s;letter-spacing:1px
 }
 .btn-primary{
-  padding:12px 48px;background:#e25555;color:#fff
+  padding:12px 48px;background:#e53935;color:#fff
 }
-.btn-primary:hover{background:#d44;transform:scale(1.03);box-shadow:0 4px 20px rgba(226,85,85,.4)}
-.btn-primary.running{background:#4a4a6a}
-.btn-primary.running:hover{background:#5a5a7a}
+.btn-primary:hover{background:#c62828;transform:scale(1.03);box-shadow:0 4px 20px rgba(229,57,53,.4)}
+/* 休息模式下按钮跟随灰阶，避免大红块把"该休息"的信号盖掉。
+   这两条必须在 .running 之前，靠后者覆盖"暂停"态。 */
+.short-break .btn-primary{background:#b0b0b0;color:#111}
+.short-break .btn-primary:hover{background:#c4c4c4;box-shadow:none}
+.long-break .btn-primary{background:#757575;color:#fff}
+.long-break .btn-primary:hover{background:#8a8a8a;box-shadow:none}
+/* color 必须显式写回白色：上面 .short-break 把文字设成了深色，
+   而"暂停"态是深灰底，不覆盖就会变成深色字压深色底。 */
+.btn-primary.running{background:#3a3a3a;color:#fff}
+.btn-primary.running:hover{background:#4a4a4a}
 .btn-secondary{
-  padding:12px 24px;background:transparent;color:#666;border:1px solid #333;font-size:13px
+  padding:12px 24px;background:transparent;color:#8a8a8a;border:1px solid #2e2e2e;font-size:13px
 }
-.btn-secondary:hover{color:#e25555;border-color:#e25555}
+.btn-secondary:hover{color:#e53935;border-color:#e53935}
 /* Settings */
 .settings{
-  width:100%;padding:16px 20px;background:#16162a;
-  border-radius:14px;border:1px solid #2a2a44
+  width:100%;padding:16px 20px;background:#141414;
+  border-radius:14px;border:1px solid #2e2e2e
 }
 .settings-row{display:flex;justify-content:space-between;gap:8px}
 .settings-row label{
-  display:flex;align-items:center;gap:6px;font-size:12px;color:#888
+  display:flex;align-items:center;gap:6px;font-size:12px;color:#8a8a8a
 }
 .settings-row input[type="number"]{
-  width:46px;padding:4px 6px;border:1px solid #2a2a44;border-radius:6px;
-  background:#1a1a2e;color:#e0e0e0;font-size:14px;text-align:center;outline:none
+  width:46px;padding:4px 6px;border:1px solid #2e2e2e;border-radius:6px;
+  background:#0d0d0d;color:#ededed;font-size:14px;text-align:center;outline:none
 }
-.settings-row input[type="number"]:focus{border-color:#e25555}
+.settings-row input[type="number"]:focus{border-color:#e53935}
 /* Footer */
-.footer{font-size:11px;color:#444;margin-top:12px;text-align:center}
+.footer{font-size:11px;color:#5a5a5a;margin-top:12px;text-align:center}
 .footer kbd{
-  padding:1px 6px;border-radius:4px;background:#2a2a44;color:#666;
+  padding:1px 6px;border-radius:4px;background:#242424;color:#8a8a8a;
   font-size:10px;font-family:inherit
 }
 </style>
