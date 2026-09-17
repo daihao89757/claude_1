@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍅 番茄钟</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;
+  background:#1a1a2e;color:#e0e0e0;user-select:none;
+  display:flex;justify-content:center;align-items:center;
+  min-height:100vh;overflow:hidden
+}
+.app{
+  width:400px;padding:30px;border-radius:24px;
+  background:#1e1e36;box-shadow:0 20px 60px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;align-items:center
+}
+/* Mode Tabs */
+.tabs{display:flex;gap:6px;margin-bottom:24px;width:100%}
+.tab{
+  flex:1;padding:10px 0;border:none;border-radius:12px;
+  background:#2a2a44;color:#888;font-size:15px;font-weight:600;
+  cursor:pointer;transition:all .3s
+}
+.tab:hover{background:#35355a;color:#aaa}
+.tab.active{background:#e25555;color:#fff;box-shadow:0 4px 15px rgba(226,85,85,.35)}
+.tab[data-mode="shortBreak"].active{background:#4ecdc4;box-shadow:0 4px 15px rgba(78,205,196,.35)}
+.tab[data-mode="longBreak"].active{background:#6c63ff;box-shadow:0 4px 15px rgba(108,99,255,.35)}
+/* Timer */
+.timer-wrap{position:relative;width:240px;height:240px;margin-bottom:8px}
+.timer-wrap svg{position:absolute;transform:rotate(-90deg)}
+.timer-wrap .bg{fill:none;stroke:#2a2a44;stroke-width:6}
+.timer-wrap .bar{
+  fill:none;stroke:#e25555;stroke-width:6;stroke-linecap:round;
+  stroke-dasharray:678.58;stroke-dashoffset:0;transition:stroke-dashoffset 1s linear,stroke .5s
+}
+.short-break .bar{stroke:#4ecdc4}
+.long-break .bar{stroke:#6c63ff}
+.timer-inner{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center
+}
+.label{font-size:14px;color:#888;letter-spacing:2px;margin-bottom:4px}
+.time{
+  font-size:58px;font-weight:300;letter-spacing:4px;
+  font-variant-numeric:tabular-nums;color:#fff;line-height:1;margin-bottom:6px
+}
+.sessions{display:flex;gap:6px;margin-bottom:16px}
+.sessions span{font-size:16px;opacity:.2;transition:opacity .3s}
+.sessions span.done{opacity:1}
+/* Buttons */
+.btn-row{display:flex;gap:10px;margin-bottom:20px}
+.btn{
+  border:none;border-radius:25px;font-size:16px;font-weight:600;
+  cursor:pointer;transition:all .2s;letter-spacing:1px
+}
+.btn-primary{
+  padding:12px 48px;background:#e25555;color:#fff
+}
+.btn-primary:hover{background:#d44;transform:scale(1.03);box-shadow:0 4px 20px rgba(226,85,85,.4)}
+.btn-primary.running{background:#4a4a6a}
+.btn-primary.running:hover{background:#5a5a7a}
+.btn-secondary{
+  padding:12px 24px;background:transparent;color:#666;border:1px solid #333;font-size:13px
+}
+.btn-secondary:hover{color:#e25555;border-color:#e25555}
+/* Settings */
+.settings{
+  width:100%;padding:16px 20px;background:#16162a;
+  border-radius:14px;border:1px solid #2a2a44
+}
+.settings-row{display:flex;justify-content:space-between;gap:8px}
+.settings-row label{
+  display:flex;align-items:center;gap:6px;font-size:12px;color:#888
+}
+.settings-row input[type="number"]{
+  width:46px;padding:4px 6px;border:1px solid #2a2a44;border-radius:6px;
+  background:#1a1a2e;color:#e0e0e0;font-size:14px;text-align:center;outline:none
+}
+.settings-row input[type="number"]:focus{border-color:#e25555}
+/* Footer */
+.footer{font-size:11px;color:#444;margin-top:12px;text-align:center}
+.footer kbd{
+  padding:1px 6px;border-radius:4px;background:#2a2a44;color:#666;
+  font-size:10px;font-family:inherit
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Mode Tabs -->
+  <div class="tabs">
+    <button class="tab active" data-mode="pomodoro">专注</button>
+    <button class="tab" data-mode="shortBreak">短休</button>
+    <button class="tab" data-mode="longBreak">长休</button>
+  </div>
+
+  <!-- Timer -->
+  <div class="timer-wrap">
+    <svg viewBox="0 0 240 240">
+      <circle class="bg" cx="120" cy="120" r="108"/>
+      <circle class="bar" cx="120" cy="120" r="108"/>
+    </svg>
+    <div class="timer-inner">
+      <div class="label" id="label">专注时间</div>
+      <div class="time" id="display">25:00</div>
+      <div class="sessions" id="sessions">
+        <span>🍅</span><span>🍅</span><span>🍅</span><span>🍅</span>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="mainBtn">开始</button>
+        <button class="btn btn-secondary" id="resetBtn">重置</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings -->
+  <div class="settings">
+    <div class="settings-row">
+      <label>专注 <input type="number" id="pomodoroTime" value="25" min="1" max="60"> 分</label>
+      <label>短休 <input type="number" id="shortBreakTime" value="5" min="1" max="30"> 分</label>
+      <label>长休 <input type="number" id="longBreakTime" value="15" min="1" max="60"> 分</label>
+    </div>
+  </div>
+
+  <div class="footer">空格=暂停/继续 · R=重置</div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const CIRC = 2*Math.PI*108;
+
+const MODES={
+  pomodoro:{label:'专注时间',time:25},
+  shortBreak:{label:'短休时间',time:5},
+  longBreak:{label:'长休时间',time:15}
+};
+
+// State
+let st={
+  mode:'pomodoro',
+  timeLeft:25*60,
+  total:25*60,
+  running:false,
+  done:0,
+  timer:null
+};
+
+// Load settings
+try{
+  const saved=JSON.parse(localStorage.getItem('pomoSettings'));
+  if(saved) Object.assign(MODES,saved);
+}catch{}
+
+const inputs={
+  pomodoro:$('#pomodoroTime'),
+  shortBreak:$('#shortBreakTime'),
+  longBreak:$('#longBreakTime')
+};
+inputs.pomodoro.value=MODES.pomodoro.time;
+inputs.shortBreak.value=MODES.shortBreak.time;
+inputs.longBreak.value=MODES.longBreak.time;
+
+// Audio
+let actx=null;
+function beep(){
+  try{
+    if(!actx) actx=new(window.AudioContext||window.webkitAudioContext)();
+    const t=actx.currentTime;
+    for(let i=0;i<4;i++){
+      const o=actx.createOscillator(), g=actx.createGain();
+      o.type='sine';o.frequency.value=880;
+      g.gain.setValueAtTime(.4,t+i*.25);
+      g.gain.exponentialRampToValueAtTime(.01,t+i*.25+.15);
+      o.connect(g);g.connect(actx.destination);
+      o.start(t+i*.25);o.stop(t+i*.25+.15);
+    }
+  }catch{}
+}
+
+function notify(title,body){
+  beep();
+  if('Notification'in window&&Notification.permission==='granted')
+    new Notification(title,{body});
+}
+
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+
+function updDisplay(){
+  $('#display').textContent=fmt(st.timeLeft);
+  $('#label').textContent=MODES[st.mode].label;
+  const pct=st.total>0?1-st.timeLeft/st.total:0;
+  $('.bar').style.strokeDashoffset=CIRC*pct;
+}
+
+function updSessions(){
+  $$('#sessions span').forEach((e,i)=>e.classList.toggle('done',i<st.done));
+}
+
+function switchTo(mode){
+  if(st.running) return;
+  st.mode=mode;st.running=false;
+  st.timeLeft=MODES[mode].time*60;st.total=st.timeLeft;
+  $$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.mode===mode));
+  document.querySelector('.timer-wrap').className='timer-wrap'+(mode==='shortBreak'?' short-break':mode==='longBreak'?' long-break':'');
+  $('#mainBtn').textContent='开始';$('#mainBtn').classList.remove('running');
+  updDisplay();
+}
+
+function done(){
+  st.done++;updSessions();
+  if(st.mode==='pomodoro'){
+    if(st.done%4===0){notify('好棒！','完成4个番茄，休息久一点 🎉');switchTo('longBreak')}
+    else{notify('时间到！','休息一下吧~');switchTo('shortBreak')}
+  }else{notify('休息结束！','开始新的番茄吧 💪');switchTo('pomodoro')}
+}
+
+function tick(){
+  st.timeLeft--;updDisplay();
+  if(st.timeLeft<=0){
+    if(st.timer){clearInterval(st.timer);st.timer=null}
+    st.running=false;done();
+  }
+}
+
+function start(){
+  if(st.timeLeft<=0){st.timeLeft=MODES[st.mode].time*60;st.total=st.timeLeft}
+  st.running=true;
+  $('#mainBtn').textContent='暂停';$('#mainBtn').classList.add('running');
+  st.timer=setInterval(tick,1000);
+}
+
+function pause(){
+  st.running=false;
+  $('#mainBtn').textContent='继续';$('#mainBtn').classList.remove('running');
+  if(st.timer){clearInterval(st.timer);st.timer=null}
+}
+
+function reset(){
+  if(st.timer){clearInterval(st.timer);st.timer=null}
+  st.running=false;
+  st.timeLeft=MODES[st.mode].time*60;st.total=st.timeLeft;
+  $('#mainBtn').textContent='开始';$('#mainBtn').classList.remove('running');
+  updDisplay();
+}
+
+// Events
+$$('.tab').forEach(t=>t.addEventListener('click',()=>switchTo(t.dataset.mode)));
+$('#mainBtn').addEventListener('click',()=>st.running?pause():start());
+$('#resetBtn').addEventListener('click',reset);
+
+Object.entries(inputs).forEach(([key,inp])=>{
+  inp.addEventListener('change',()=>{
+    let v=parseInt(inp.value,10);
+    if(isNaN(v)||v<1)v=1;
+    const max=key==='shortBreak'?30:60;
+    if(v>max)v=max;
+    inp.value=v;
+    MODES[key].time=v;
+    localStorage.setItem('pomoSettings',JSON.stringify(MODES));
+    if(!st.running&&st.mode===key){
+      st.timeLeft=v*60;st.total=st.timeLeft;updDisplay();
+    }
+  });
+});
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  if(e.key===' '||e.key==='Space'){e.preventDefault();$('#mainBtn').click()}
+  if(e.key==='r'||e.key==='R'){$('#resetBtn').click()}
+});
+
+// Request notification permission
+if('Notification'in window&&Notification.permission==='default')
+  Notification.requestPermission();
+
+// Init
+updSessions();switchTo('pomodoro');
+</script>
+</body>
+</html>
